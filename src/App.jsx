@@ -1,9 +1,15 @@
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
-import "./App.css";
-
 import React, { useState, useEffect } from "react";
 import { Plus, Trash2, Check, Tag, Filter, Edit3, Save, X } from "lucide-react";
+import { IoHomeOutline } from "react-icons/io5";
+import {
+  MdOutlineWorkOutline,
+  MdOutlineHealthAndSafety,
+  MdOutlineEuroSymbol,
+  MdLaptopChromebook,
+  MdCheckCircleOutline,
+  MdOutlineRadioButtonUnchecked,
+} from "react-icons/md";
+import { HiDotsHorizontal } from "react-icons/hi";
 
 function App() {
   const [tasks, setTasks] = useState([]);
@@ -21,39 +27,52 @@ function App() {
   // Categorías predefinidas con colores vibrantes para tema oscuro
   const categories = [
     {
-      name: "Personal",
-      color: "bg-cyan-500",
-      lightColor: "bg-cyan-500/20",
-      textColor: "text-cyan-400",
-      borderColor: "border-cyan-500",
-    },
-    {
-      name: "Trabajo",
-      color: "bg-emerald-500",
-      lightColor: "bg-emerald-500/20",
-      textColor: "text-emerald-400",
-      borderColor: "border-emerald-500",
-    },
-    {
-      name: "Estudio",
+      name: "Home",
+      icon: <IoHomeOutline />,
       color: "bg-purple-500",
       lightColor: "bg-purple-500/20",
       textColor: "text-purple-400",
       borderColor: "border-purple-500",
     },
     {
-      name: "Casa",
+      name: "Work",
+      icon: <MdOutlineWorkOutline />,
+      color: "bg-blue-500",
+      lightColor: "bg-blue-500/20",
+      textColor: "text-blue-400",
+      borderColor: "border-blue-500",
+    },
+    {
+      name: "Health",
+      icon: <MdOutlineHealthAndSafety />,
+      color: "bg-green-500",
+      lightColor: "bg-green-500/20",
+      textColor: "text-green-400",
+      borderColor: "border-green-500",
+    },
+    {
+      name: "Economy",
+      icon: <MdOutlineEuroSymbol />,
+      color: "bg-yellow-500",
+      lightColor: "bg-yellow-500/20",
+      textColor: "text-yellow-400",
+      borderColor: "border-yellow-500",
+    },
+    {
+      name: "Studies",
+      icon: <MdLaptopChromebook />,
       color: "bg-orange-500",
       lightColor: "bg-orange-500/20",
       textColor: "text-orange-400",
       borderColor: "border-orange-500",
     },
     {
-      name: "Salud",
-      color: "bg-pink-500",
-      lightColor: "bg-pink-500/20",
-      textColor: "text-pink-400",
-      borderColor: "border-pink-500",
+      name: "Others",
+      icon: <HiDotsHorizontal />,
+      color: "bg-red-500",
+      lightColor: "bg-red-500/20",
+      textColor: "text-red-400",
+      borderColor: "border-red-500",
     },
   ];
 
@@ -213,21 +232,12 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-800 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-700 to-slate-900 py-8 px-4">
       <div className="max-w-2xl mx-auto">
         {/* Header with Filter Toggle */}
         <div className="flex justify-between items-center mb-8">
           <div className="text-center flex-1">
-            <h1 className="text-3xl font-bold text-white mb-2">
-              📝 Mis Tareas
-            </h1>
-            <p className="text-gray-300">
-              {totalPendingTasks > 0
-                ? `${totalPendingTasks} tarea${
-                    totalPendingTasks !== 1 ? "s" : ""
-                  } pendiente${totalPendingTasks !== 1 ? "s" : ""}`
-                : "Todo al día"}
-            </p>
+            <h1 className="text-3xl font-bold text-white mb-2">To-do's</h1>
           </div>
 
           {tasks.length > 0 && (
@@ -396,7 +406,13 @@ function App() {
               return (
                 <div
                   key={task.id}
-                  className={`bg-gray-800/60 backdrop-blur-sm border border-gray-700 rounded-lg shadow-xl p-4 flex items-center gap-3 transition-all duration-200 ${
+                  className={` ${
+                    !task.completed
+                      ? categoryStyle.lightColor
+                      : "bg-gray-800/60"
+                  } backdrop-blur-sm border ${
+                    categoryStyle.borderColor
+                  } rounded-lg shadow-xl py-2 px-2 flex items-center gap-3 transition-all duration-200 ${
                     task.completed
                       ? "opacity-60"
                       : "hover:shadow-2xl hover:bg-gray-800/80"
@@ -405,18 +421,22 @@ function App() {
                   <button
                     onClick={() => toggleTask(task.id)}
                     disabled={isEditing}
-                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                    className={`transition-all ${
                       task.completed
-                        ? "bg-gradient-to-r from-green-400 to-emerald-500 border-green-400 text-white shadow-lg"
+                        ? "text-gray-500"
                         : isEditing
-                        ? "border-gray-600 cursor-not-allowed"
-                        : "border-gray-500 hover:border-green-400 hover:bg-green-400/10"
+                        ? "text-gray-600 cursor-not-allowed"
+                        : `${categoryStyle.textColor}`
                     }`}
                   >
-                    {task.completed && <Check size={16} />}
+                    {task.completed ? (
+                      <MdCheckCircleOutline className="text-3xl" />
+                    ) : (
+                      <MdOutlineRadioButtonUnchecked className="text-3xl" />
+                    )}
                   </button>
 
-                  <div className="flex-1">
+                  <div className="flex-1 flex">
                     {isEditing ? (
                       <div className="space-y-2">
                         <div className="flex flex-wrap gap-1">
@@ -445,15 +465,12 @@ function App() {
                       </div>
                     ) : (
                       <>
-                        {!showFilters && (
-                          <div className="flex items-center gap-2 mb-1">
-                            <span
-                              className={`px-2 py-1 rounded-full text-xs font-medium border ${categoryStyle.lightColor} ${categoryStyle.textColor} ${categoryStyle.borderColor}`}
-                            >
-                              {task.category}
-                            </span>
-                          </div>
-                        )}
+                        <span
+                          className={`px-2 py-1  ${categoryStyle.textColor} `}
+                        >
+                          {categoryStyle.icon}
+                        </span>
+
                         <span
                           className={`transition-all cursor-pointer hover:text-cyan-300 ${
                             task.completed
