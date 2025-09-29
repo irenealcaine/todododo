@@ -262,19 +262,19 @@ function App() {
               <div className="flex items-center gap-2 mb-3">
                 <TbFilter className="text-gray-300" />
                 <span className="font-medium text-gray-200">
-                  Filtrar por categoría:
+                  Filter by category
                 </span>
               </div>
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setFilterCategory("Todas")}
                   className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
-                    filterCategory === "Todas"
+                    filterCategory === "All"
                       ? "bg-white text-gray-900 shadow-lg"
                       : "bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600"
                   }`}
                 >
-                  Todas ({tasks.filter((task) => !task.completed).length})
+                  All ({tasks.filter((task) => !task.completed).length})
                 </button>
                 {categories.map((category) => (
                   <button
@@ -311,7 +311,7 @@ function App() {
                   <path d="M7 12h10" />
                   <path d="M10 18h4" />
                 </svg>
-                <span className="font-medium text-gray-200">Ordenar por:</span>
+                <span className="font-medium text-gray-200">Order by</span>
               </div>
               <div className="flex flex-wrap gap-2">
                 <button
@@ -322,7 +322,7 @@ function App() {
                       : "bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600"
                   }`}
                 >
-                  🕐 Fecha (recientes primero)
+                  Date (recent first)
                 </button>
                 <button
                   onClick={() => setSortBy("category")}
@@ -332,7 +332,7 @@ function App() {
                       : "bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600"
                   }`}
                 >
-                  🏷️ Categoría (A-Z)
+                  Category (A-Z)
                 </button>
               </div>
             </div>
@@ -355,7 +355,7 @@ function App() {
                   <path d="9 12l2 2 4-4" />
                 </svg>
                 <span className="font-medium text-gray-200">
-                  Tareas completadas:
+                  Show completed
                 </span>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -367,7 +367,7 @@ function App() {
                       : "bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600"
                   }`}
                 >
-                  🔀 Mezcladas (por orden)
+                  Normal (by order)
                 </button>
                 <button
                   onClick={() => setCompletedAtEnd(true)}
@@ -377,7 +377,7 @@ function App() {
                       : "bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600"
                   }`}
                 >
-                  ⬇️ Al final
+                  Completed at the bottom
                 </button>
               </div>
             </div>
@@ -392,13 +392,13 @@ function App() {
               </div>
               <p className="text-gray-300 text-lg mb-2">
                 {filterCategory === "Todas"
-                  ? "¡Sin tareas pendientes!"
-                  : `Sin tareas en ${filterCategory}`}
+                  ? "Without todo's"
+                  : `Without todo's in ${filterCategory}`}
               </p>
               <p className="text-gray-400 text-sm">
                 {filterCategory === "Todas"
-                  ? "Presiona el botón + para agregar tu primera tarea"
-                  : "Cambia el filtro o agrega una nueva tarea"}
+                  ? "Click on the + button to add a todo"
+                  : "Change the filter or add a todo"}
               </p>
             </div>
           ) : (
@@ -628,13 +628,6 @@ function App() {
             </div>
           </div>
         )}
-
-        {/* Footer */}
-        <div className="mt-8 mb-20 text-center">
-          <p className="text-sm text-gray-400">
-            Tus datos se guardan automáticamente en este dispositivo
-          </p>
-        </div>
       </div>
     </div>
   );
