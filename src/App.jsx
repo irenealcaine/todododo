@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Plus, Trash2, Check, Tag, Filter, Edit3, Save, X } from "lucide-react";
-import { IoHomeOutline } from "react-icons/io5";
+import { IoHomeOutline, IoCloseSharp } from "react-icons/io5";
 import {
   MdOutlineWorkOutline,
   MdOutlineHealthAndSafety,
@@ -8,8 +8,11 @@ import {
   MdLaptopChromebook,
   MdCheckCircleOutline,
   MdOutlineRadioButtonUnchecked,
+  MdOutlineEdit,
 } from "react-icons/md";
 import { HiDotsHorizontal } from "react-icons/hi";
+import { FaRegSave, FaPlus, FaRegTrashAlt } from "react-icons/fa";
+import { TbFilter } from "react-icons/tb";
 
 function App() {
   const [tasks, setTasks] = useState([]);
@@ -246,7 +249,7 @@ function App() {
               className="w-10 h-10 flex items-center justify-center bg-gray-800/60 backdrop-blur-sm border border-gray-700 rounded-lg text-gray-300 hover:text-white hover:bg-gray-700/60 transition-all shadow-lg"
               title="Filtros"
             >
-              <Filter size={20} />
+              <TbFilter />
             </button>
           )}
         </div>
@@ -257,7 +260,7 @@ function App() {
             {/* Filter by Category */}
             <div className="mb-4">
               <div className="flex items-center gap-2 mb-3">
-                <Filter size={18} className="text-gray-300" />
+                <TbFilter className="text-gray-300" />
                 <span className="font-medium text-gray-200">
                   Filtrar por categoría:
                 </span>
@@ -495,14 +498,14 @@ function App() {
                           className="w-8 h-8 flex items-center justify-center text-green-400 hover:text-green-300 hover:bg-green-500/10 rounded-full transition-all disabled:text-gray-600"
                           title="Guardar (Enter)"
                         >
-                          <Save size={16} />
+                          <FaRegSave />
                         </button>
                         <button
                           onClick={cancelEditing}
                           className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-300 hover:bg-gray-500/10 rounded-full transition-all"
                           title="Cancelar (Esc)"
                         >
-                          <X size={16} />
+                          <IoCloseSharp />
                         </button>
                       </>
                     ) : (
@@ -517,14 +520,14 @@ function App() {
                           }`}
                           title="Editar tarea"
                         >
-                          <Edit3 size={16} />
+                          <MdOutlineEdit />
                         </button>
                         <button
                           onClick={() => deleteTask(task.id)}
                           className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-full transition-all"
                           title="Eliminar tarea"
                         >
-                          <Trash2 size={16} />
+                          <FaRegTrashAlt />
                         </button>
                       </>
                     )}
@@ -541,7 +544,7 @@ function App() {
           className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-full shadow-2xl hover:shadow-cyan-500/25 hover:scale-110 transition-all duration-200 flex items-center justify-center z-50"
           title="Agregar nueva tarea"
         >
-          <Plus size={24} />
+          <FaPlus />
         </button>
 
         {/* Add Task Modal */}
@@ -564,13 +567,12 @@ function App() {
                   onClick={() => setShowAddModal(false)}
                   className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-200 hover:bg-gray-700 rounded-full transition-all"
                 >
-                  <X size={20} />
+                  <IoCloseSharp />
                 </button>
               </div>
 
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-200 mb-2">
-                  <Tag size={16} className="inline mr-1" />
                   Categoría:
                 </label>
                 <div className="flex flex-wrap gap-2">
