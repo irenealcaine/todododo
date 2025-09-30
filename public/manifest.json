@@ -1,7 +1,7 @@
 {
-  "name": "Mi gestor de tareas",
-  "short_name": "Tareas",
-  "description": "Una aplicación sencilla para gestionar tus tareas diarias.",
+  "name": "My Task Manager",
+  "short_name": "Todos",
+  "description": "A simple app to manage your daily tasks.",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#ffffff",
