@@ -1,5 +1,19 @@
-import React, { useState, useEffect } from "react";
-import { Plus, Trash2, Check, Tag, Filter, Edit3, Save, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { auth, db } from "./firebase";
+import { AuthForm } from "./AuthForm";
+import {
+  collection,
+  addDoc,
+  // getDocs,
+  query,
+  where,
+  onSnapshot,
+  doc,
+  updateDoc,
+  deleteDoc,
+  orderBy
+} from "firebase/firestore";
 import { IoHomeOutline, IoCloseSharp } from "react-icons/io5";
 import {
   MdOutlineWorkOutline,
@@ -15,6 +29,16 @@ import { FaRegSave, FaPlus, FaRegTrashAlt } from "react-icons/fa";
 import { TbFilter } from "react-icons/tb";
 
 function App() {
+  const [guest, setGuest] = useState(false);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser);
+      if (firebaseUser) setGuest(false);
+    });
+    return () => unsubscribe();
+  }, []);
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Personal");
@@ -80,23 +104,30 @@ function App() {
   ];
 
   // Cargar tareas del localStorage al iniciar
+  // Sincronizar tareas con Firestore o localStorage
   useEffect(() => {
-    const savedTasks = localStorage.getItem("todoTasks");
-    if (savedTasks) {
-      const parsedTasks = JSON.parse(savedTasks);
-      // Migrar tareas antiguas sin categoría
-      const migratedTasks = parsedTasks.map((task) => ({
-        ...task,
-        category: task.category || "Personal",
-      }));
-      setTasks(migratedTasks);
+    if (guest) {
+      const savedTasks = localStorage.getItem("todoTasks");
+      setTasks(savedTasks ? JSON.parse(savedTasks) : []);
+      return;
     }
-  }, []);
-
-  // Guardar tareas en localStorage cada vez que cambien
-  useEffect(() => {
-    localStorage.setItem("todoTasks", JSON.stringify(tasks));
-  }, [tasks]);
+    if (user) {
+      const q = query(
+        collection(db, "tasks"),
+        where("uid", "==", user.uid),
+        orderBy("createdAt", "desc")
+      );
+      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        const tasksData = [];
+        querySnapshot.forEach((doc) => {
+          tasksData.push({ id: doc.id, ...doc.data() });
+        });
+        setTasks(tasksData);
+      });
+      return () => unsubscribe();
+    }
+    setTasks([]);
+  }, [user, guest]);
 
   // Obtener color de categoría
   const getCategoryStyle = (categoryName) => {
@@ -132,11 +163,12 @@ function App() {
     }
   });
 
-  const pendingFilteredTasks = filteredTasks.filter((task) => !task.completed);
+  // const pendingFilteredTasks = filteredTasks.filter((task) => !task.completed);
 
   // Agregar nueva tarea
-  const addTask = () => {
-    if (newTask.trim() !== "") {
+  const addTask = async () => {
+    if (newTask.trim() === "") return;
+    if (guest) {
       const task = {
         id: Date.now(),
         text: newTask.trim(),
@@ -144,7 +176,21 @@ function App() {
         category: selectedCategory,
         createdAt: new Date().toISOString(),
       };
-      setTasks([...tasks, task]);
+      const updated = [...tasks, task];
+      setTasks(updated);
+      localStorage.setItem("todoTasks", JSON.stringify(updated));
+      setNewTask("");
+      setShowAddModal(false);
+      return;
+    }
+    if (user) {
+      await addDoc(collection(db, "tasks"), {
+        text: newTask.trim(),
+        completed: false,
+        category: selectedCategory,
+        createdAt: new Date().toISOString(),
+        uid: user.uid,
+      });
       setNewTask("");
       setShowAddModal(false);
     }
@@ -159,18 +205,33 @@ function App() {
   };
 
   // Alternar estado de completado
-  const toggleTask = (id) => {
-    setTasks(
-      tasks.map((task) =>
+  const toggleTask = async (id, completed) => {
+    if (guest) {
+      const updated = tasks.map((task) =>
         task.id === id ? { ...task, completed: !task.completed } : task
-      )
-    );
+      );
+      setTasks(updated);
+      localStorage.setItem("todoTasks", JSON.stringify(updated));
+      return;
+    }
+    const taskRef = doc(db, "tasks", id);
+    await updateDoc(taskRef, { completed: !completed });
   };
 
   // Eliminar tarea
-  const deleteTask = (id) => {
-    setTasks(tasks.filter((task) => task.id !== id));
-    // Cancelar edición si se está editando la tarea que se elimina
+  const deleteTask = async (id) => {
+    if (guest) {
+      const updated = tasks.filter((task) => task.id !== id);
+      setTasks(updated);
+      localStorage.setItem("todoTasks", JSON.stringify(updated));
+      if (editingTask === id) {
+        setEditingTask(null);
+        setEditText("");
+        setEditCategory("");
+      }
+      return;
+    }
+    await deleteDoc(doc(db, "tasks", id));
     if (editingTask === id) {
       setEditingTask(null);
       setEditText("");
@@ -193,19 +254,29 @@ function App() {
   };
 
   // Guardar edición
-  const saveEditing = () => {
-    if (editText.trim() !== "") {
-      setTasks(
-        tasks.map((task) =>
-          task.id === editingTask
-            ? { ...task, text: editText.trim(), category: editCategory }
-            : task
-        )
+  const saveEditing = async () => {
+    if (editText.trim() === "") return;
+    if (guest) {
+      const updated = tasks.map((task) =>
+        task.id === editingTask
+          ? { ...task, text: editText.trim(), category: editCategory }
+          : task
       );
+      setTasks(updated);
+      localStorage.setItem("todoTasks", JSON.stringify(updated));
       setEditingTask(null);
       setEditText("");
       setEditCategory("");
+      return;
     }
+    const taskRef = doc(db, "tasks", editingTask);
+    await updateDoc(taskRef, {
+      text: editText.trim(),
+      category: editCategory,
+    });
+    setEditingTask(null);
+    setEditText("");
+    setEditCategory("");
   };
 
   // Manejar Enter en edición
@@ -225,7 +296,7 @@ function App() {
   };
 
   // Estadísticas (solo tareas pendientes)
-  const totalPendingTasks = pendingFilteredTasks.length;
+  // const totalPendingTasks = pendingFilteredTasks.length;
 
   // Contar tareas pendientes por categoría
   const getPendingTaskCountByCategory = (categoryName) => {
@@ -234,13 +305,32 @@ function App() {
     ).length;
   };
 
+  if (!user && !guest) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-700 to-slate-900">
+        <AuthForm onGuest={() => setGuest(true)} />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-700 to-slate-900 py-8 px-4">
       <div className="max-w-2xl mx-auto">
+        <div className="flex justify-end mb-4">
+          {user && (
+            <>
+              <span className="text-gray-200 mr-4">{user.email}</span>
+              <button onClick={() => signOut(auth)} className="px-3 py-1 bg-gray-700 text-gray-300 rounded hover:bg-gray-600">Sign out</button>
+            </>
+          )}
+          {guest && (
+            <button onClick={() => setGuest(false)} className="px-3 py-1 bg-gray-700 text-gray-300 rounded hover:bg-gray-600">Sign out (guest)</button>
+          )}
+        </div>
         {/* Header with Filter Toggle */}
         <div className="flex justify-between items-center mb-8">
           <div className="text-center flex-1">
-            <h1 className="text-3xl font-bold text-white mb-2">To-do's</h1>
+            <h1 className="text-3xl font-bold text-white mb-2">Todos</h1>
           </div>
 
           {tasks.length > 0 && (
@@ -422,7 +512,7 @@ function App() {
                   }`}
                 >
                   <button
-                    onClick={() => toggleTask(task.id)}
+                    onClick={() => toggleTask(task.id, task.completed)}
                     disabled={isEditing}
                     className={`transition-all ${
                       task.completed
