@@ -1,0 +1,16 @@
+{
+  "name": "Mi gestor de tareas",
+  "short_name": "Tareas",
+  "description": "Una aplicación sencilla para gestionar tus tareas diarias.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3178c6",
+  "icons": [
+    {
+      "src": "check.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+}

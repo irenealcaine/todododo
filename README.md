@@ -1,8 +1,38 @@
-# React + Vite
+# todododo
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este proyecto es una aplicación web construida con React y Vite.
 
-Currently, two official plugins are available:
+## Scripts principales
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- `pnpm install` — Instala las dependencias
+- `pnpm run dev` — Inicia el servidor de desarrollo
+- `pnpm run build` — Compila la aplicación para producción
+- `pnpm run preview` — Previsualiza la build de producción
+
+## Requisitos
+
+- Node.js
+- pnpm (o npm/yarn, pero este proyecto usa pnpm por defecto)
+
+## Cómo compilar y ejecutar
+
+1. Instala las dependencias:
+	```sh
+	pnpm install
+	```
+2. Inicia el servidor de desarrollo:
+	```sh
+	pnpm run dev
+	```
+3. Para compilar para producción:
+	```sh
+	pnpm run build
+	```
+4. Para previsualizar la build:
+	```sh
+	pnpm run preview
+	```
+
+---
+
+Proyecto generado con [Vite](https://vitejs.dev/) y [React](https://react.dev/).
