@@ -14,7 +14,7 @@ import {
   deleteDoc,
   orderBy, serverTimestamp
 } from "firebase/firestore";
-import { IoHomeOutline, IoCloseSharp } from "react-icons/io5";
+import { IoHomeOutline, IoCloseSharp, IoLogInOutline  } from "react-icons/io5";
 import {
   MdOutlineWorkOutline,
   MdOutlineHealthAndSafety,
@@ -22,7 +22,7 @@ import {
   MdLaptopChromebook,
   MdCheckCircleOutline,
   MdOutlineRadioButtonUnchecked,
-  MdOutlineEdit,
+  MdOutlineEdit, MdOutlineLogout 
 } from "react-icons/md";
 import { HiDotsHorizontal } from "react-icons/hi";
 import { FaRegSave, FaPlus, FaRegTrashAlt } from "react-icons/fa";
@@ -350,20 +350,12 @@ useEffect(() => {
     ).length;
   };
 
-  // Ya no mostramos AuthForm aquí, el login será modal
-  useEffect(() => { console.log("USER:" + user); console.log("GUEST:" + guest)},[user, guest]);
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-700 to-slate-900 py-8 px-4">
       <div className="max-w-2xl mx-auto">
-        <div className="flex justify-end mb-4">
-          {user && (
-            <>
-              <span className="text-gray-200 mr-4">{user.email}</span>
-              <button onClick={() => signOut(auth)} className="px-3 py-1 bg-gray-700 text-gray-300 rounded hover:bg-gray-600">Sign out</button>
-            </>
-          )}
-        </div>
+
         {/* Header with Filter Toggle y Login */}
         <div className="flex justify-between items-center mb-8">
           <div className="text-center flex-1">
@@ -375,19 +367,21 @@ useEffect(() => {
               <button
                 onClick={() => setShowFilters(!showFilters)}
                 className="w-10 h-10 flex items-center justify-center bg-gray-800/60 backdrop-blur-sm border border-gray-700 rounded-lg text-gray-300 hover:text-white hover:bg-gray-700/60 transition-all shadow-lg"
-                title="Filtros"
+                title="Filters"
               >
                 <TbFilter />
               </button>
             )}
-            {!user && (
+            {!user ? (
               <button
                 onClick={() => setShowLoginModal(true)}
                 className="w-10 h-10 flex items-center justify-center bg-cyan-600 border border-cyan-700 rounded-lg text-white hover:bg-cyan-700 transition-all shadow-lg"
                 title="Login"
               >
-                Login
+                <IoLogInOutline />
               </button>
+            ): (
+              <button onClick={() => signOut(auth)} className="px-3 py-1 bg-gray-700 text-gray-300 rounded hover:bg-gray-600"><MdOutlineLogout /></button>
             )}
           </div>
         </div>
