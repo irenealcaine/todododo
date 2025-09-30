@@ -29,13 +29,19 @@ import { FaRegSave, FaPlus, FaRegTrashAlt } from "react-icons/fa";
 import { TbFilter } from "react-icons/tb";
 
 function App() {
-  const [guest, setGuest] = useState(false);
+  // Mostrar modal de login
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  // guest inicia en true para entrar automáticamente como invitado
+  const [guest, setGuest] = useState(true);
   const [user, setUser] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
-      if (firebaseUser) setGuest(false);
+      if (firebaseUser) {
+        setGuest(false);
+        setShowLoginModal(false); // Cierra el modal de login al iniciar sesión
+      }
     });
     return () => unsubscribe();
   }, []);
@@ -179,21 +185,27 @@ function App() {
       const updated = [...tasks, task];
       setTasks(updated);
       localStorage.setItem("todoTasks", JSON.stringify(updated));
-      setNewTask("");
       setShowAddModal(false);
+      setNewTask("");
       return;
     }
     if (user) {
-      await addDoc(collection(db, "tasks"), {
+      const task = {
         text: newTask.trim(),
         completed: false,
         category: selectedCategory,
         createdAt: new Date().toISOString(),
         uid: user.uid,
-      });
-      setNewTask("");
+      };
       setShowAddModal(false);
+      setNewTask("");
+      try {
+        await addDoc(collection(db, "tasks"), task);
+      } catch (error) {
+        console.error("Error al agregar tarea:", error);
+      }
     }
+
   };
 
   // Cerrar modal con Escape
@@ -305,13 +317,7 @@ function App() {
     ).length;
   };
 
-  if (!user && !guest) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-700 to-slate-900">
-        <AuthForm onGuest={() => setGuest(true)} />
-      </div>
-    );
-  }
+  // Ya no mostramos AuthForm aquí, el login será modal
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-700 to-slate-900 py-8 px-4">
@@ -323,26 +329,54 @@ function App() {
               <button onClick={() => signOut(auth)} className="px-3 py-1 bg-gray-700 text-gray-300 rounded hover:bg-gray-600">Sign out</button>
             </>
           )}
-          {guest && (
-            <button onClick={() => setGuest(false)} className="px-3 py-1 bg-gray-700 text-gray-300 rounded hover:bg-gray-600">Sign out (guest)</button>
-          )}
         </div>
-        {/* Header with Filter Toggle */}
+        {/* Header with Filter Toggle y Login */}
         <div className="flex justify-between items-center mb-8">
           <div className="text-center flex-1">
             <h1 className="text-3xl font-bold text-white mb-2">Todos</h1>
           </div>
 
-          {tasks.length > 0 && (
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="w-10 h-10 flex items-center justify-center bg-gray-800/60 backdrop-blur-sm border border-gray-700 rounded-lg text-gray-300 hover:text-white hover:bg-gray-700/60 transition-all shadow-lg"
-              title="Filtros"
-            >
-              <TbFilter />
-            </button>
-          )}
+          <div className="flex gap-2">
+            {tasks.length > 0 && (
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="w-10 h-10 flex items-center justify-center bg-gray-800/60 backdrop-blur-sm border border-gray-700 rounded-lg text-gray-300 hover:text-white hover:bg-gray-700/60 transition-all shadow-lg"
+                title="Filtros"
+              >
+                <TbFilter />
+              </button>
+            )}
+            {!user && (
+              <button
+                onClick={() => setShowLoginModal(true)}
+                className="w-10 h-10 flex items-center justify-center bg-cyan-600 border border-cyan-700 rounded-lg text-white hover:bg-cyan-700 transition-all shadow-lg"
+                title="Login"
+              >
+                Login
+              </button>
+            )}
+          </div>
         </div>
+        {/* Modal de login */}
+        {showLoginModal && (
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={e => e.target === e.currentTarget && setShowLoginModal(false)}
+          >
+            <div className="bg-gray-800/90 backdrop-blur-sm border border-gray-700 rounded-lg shadow-2xl p-6 w-full max-w-md">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-semibold text-white">Login</h3>
+                <button
+                  onClick={() => setShowLoginModal(false)}
+                  className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-200 hover:bg-gray-700 rounded-full transition-all"
+                >
+                  <IoCloseSharp />
+                </button>
+              </div>
+              <AuthForm onGuest={() => { setGuest(true); setShowLoginModal(false); }} />
+            </div>
+          </div>
+        )}
 
         {/* Filter Categories - Only show when toggled */}
         {showFilters && (
@@ -358,11 +392,10 @@ function App() {
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setFilterCategory("Todas")}
-                  className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
-                    filterCategory === "All"
-                      ? "bg-white text-gray-900 shadow-lg"
-                      : "bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600"
-                  }`}
+                  className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${filterCategory === "All"
+                    ? "bg-white text-gray-900 shadow-lg"
+                    : "bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600"
+                    }`}
                 >
                   All ({tasks.filter((task) => !task.completed).length})
                 </button>
@@ -370,11 +403,10 @@ function App() {
                   <button
                     key={category.name}
                     onClick={() => setFilterCategory(category.name)}
-                    className={`px-3 py-1 rounded-full text-sm font-medium transition-all border ${
-                      filterCategory === category.name
-                        ? `${category.color} text-white shadow-lg`
-                        : `${category.lightColor} ${category.textColor} hover:opacity-80 ${category.borderColor}`
-                    }`}
+                    className={`px-3 py-1 rounded-full text-sm font-medium transition-all border ${filterCategory === category.name
+                      ? `${category.color} text-white shadow-lg`
+                      : `${category.lightColor} ${category.textColor} hover:opacity-80 ${category.borderColor}`
+                      }`}
                   >
                     {category.name} (
                     {getPendingTaskCountByCategory(category.name)})
@@ -406,21 +438,19 @@ function App() {
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setSortBy("recent")}
-                  className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
-                    sortBy === "recent"
-                      ? "bg-cyan-500 text-white shadow-lg"
-                      : "bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600"
-                  }`}
+                  className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${sortBy === "recent"
+                    ? "bg-cyan-500 text-white shadow-lg"
+                    : "bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600"
+                    }`}
                 >
                   Date
                 </button>
                 <button
                   onClick={() => setSortBy("category")}
-                  className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
-                    sortBy === "category"
-                      ? "bg-cyan-500 text-white shadow-lg"
-                      : "bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600"
-                  }`}
+                  className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${sortBy === "category"
+                    ? "bg-cyan-500 text-white shadow-lg"
+                    : "bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600"
+                    }`}
                 >
                   Category
                 </button>
@@ -451,21 +481,19 @@ function App() {
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setCompletedAtEnd(false)}
-                  className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
-                    !completedAtEnd
-                      ? "bg-purple-500 text-white shadow-lg"
-                      : "bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600"
-                  }`}
+                  className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${!completedAtEnd
+                    ? "bg-purple-500 text-white shadow-lg"
+                    : "bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600"
+                    }`}
                 >
                   Normal
                 </button>
                 <button
                   onClick={() => setCompletedAtEnd(true)}
-                  className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
-                    completedAtEnd
-                      ? "bg-purple-500 text-white shadow-lg"
-                      : "bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600"
-                  }`}
+                  className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${completedAtEnd
+                    ? "bg-purple-500 text-white shadow-lg"
+                    : "bg-gray-700 text-gray-300 hover:bg-gray-600 border border-gray-600"
+                    }`}
                 >
                   Bottom
                 </button>
@@ -499,28 +527,24 @@ function App() {
               return (
                 <div
                   key={task.id}
-                  className={` ${
-                    !task.completed
-                      ? categoryStyle.lightColor
-                      : "bg-gray-800/60"
-                  } backdrop-blur-sm border ${
-                    categoryStyle.borderColor
-                  } rounded-lg shadow-xl py-2 px-2 flex items-center gap-3 transition-all duration-200 ${
-                    task.completed
+                  className={` ${!task.completed
+                    ? categoryStyle.lightColor
+                    : "bg-gray-800/60"
+                    } backdrop-blur-sm border ${categoryStyle.borderColor
+                    } rounded-lg shadow-xl py-2 px-2 flex items-center gap-3 transition-all duration-200 ${task.completed
                       ? "opacity-60"
                       : "hover:shadow-2xl hover:bg-gray-800/80"
-                  }`}
+                    }`}
                 >
                   <button
                     onClick={() => toggleTask(task.id, task.completed)}
                     disabled={isEditing}
-                    className={`transition-all ${
-                      task.completed
-                        ? "text-gray-500"
-                        : isEditing
+                    className={`transition-all ${task.completed
+                      ? "text-gray-500"
+                      : isEditing
                         ? "text-gray-600 cursor-not-allowed"
                         : `${categoryStyle.textColor}`
-                    }`}
+                      }`}
                   >
                     {task.completed ? (
                       <MdCheckCircleOutline className="text-3xl" />
@@ -537,11 +561,10 @@ function App() {
                             <button
                               key={category.name}
                               onClick={() => setEditCategory(category.name)}
-                              className={`px-2 py-1 rounded-full text-xs font-medium transition-all border ${
-                                editCategory === category.name
-                                  ? `${category.color} text-white shadow-lg`
-                                  : `${category.lightColor} ${category.textColor} hover:opacity-80 ${category.borderColor}`
-                              }`}
+                              className={`px-2 py-1 rounded-full text-xs font-medium transition-all border ${editCategory === category.name
+                                ? `${category.color} text-white shadow-lg`
+                                : `${category.lightColor} ${category.textColor} hover:opacity-80 ${category.borderColor}`
+                                }`}
                             >
                               {category.name}
                             </button>
@@ -565,11 +588,10 @@ function App() {
                         </span>
 
                         <span
-                          className={`transition-all cursor-pointer hover:text-cyan-300 ${
-                            task.completed
-                              ? "line-through text-gray-400"
-                              : "text-gray-200"
-                          }`}
+                          className={`transition-all cursor-pointer hover:text-cyan-300 ${task.completed
+                            ? "line-through text-gray-400"
+                            : "text-gray-200"
+                            }`}
                           onClick={() => !task.completed && startEditing(task)}
                           title="Haz clic para editar"
                         >
@@ -603,11 +625,10 @@ function App() {
                         <button
                           onClick={() => startEditing(task)}
                           disabled={task.completed}
-                          className={`w-8 h-8 flex items-center justify-center rounded-full transition-all ${
-                            task.completed
-                              ? "text-gray-600 cursor-not-allowed"
-                              : "text-gray-400 hover:text-cyan-400 hover:bg-cyan-500/10"
-                          }`}
+                          className={`w-8 h-8 flex items-center justify-center rounded-full transition-all ${task.completed
+                            ? "text-gray-600 cursor-not-allowed"
+                            : "text-gray-400 hover:text-cyan-400 hover:bg-cyan-500/10"
+                            }`}
                           title="Editar tarea"
                         >
                           <MdOutlineEdit />
@@ -668,11 +689,10 @@ function App() {
                     <button
                       key={category.name}
                       onClick={() => setSelectedCategory(category.name)}
-                      className={`p-2 rounded-full text-xl font-medium transition-all border ${
-                        selectedCategory === category.name
-                          ? `${category.color} text-white shadow-lg`
-                          : `${category.lightColor} ${category.textColor} hover:opacity-80 ${category.borderColor}`
-                      }`}
+                      className={`p-2 rounded-full text-xl font-medium transition-all border ${selectedCategory === category.name
+                        ? `${category.color} text-white shadow-lg`
+                        : `${category.lightColor} ${category.textColor} hover:opacity-80 ${category.borderColor}`
+                        }`}
                     >
                       {category.icon}
                     </button>
@@ -688,7 +708,7 @@ function App() {
                   type="text"
                   value={newTask}
                   onChange={(e) => setNewTask(e.target.value)}
-                  onKeyPress={handleKeyPress}
+                  onKeyDown={handleKeyPress}
                   placeholder="What will you do?"
                   className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent text-white placeholder-gray-400"
                   autoFocus
