@@ -12,7 +12,7 @@ import {
   doc,
   updateDoc,
   deleteDoc,
-  orderBy
+  orderBy, serverTimestamp
 } from "firebase/firestore";
 import { IoHomeOutline, IoCloseSharp } from "react-icons/io5";
 import {
@@ -32,7 +32,7 @@ function App() {
   // Mostrar modal de login
   const [showLoginModal, setShowLoginModal] = useState(false);
   // guest inicia en true para entrar automáticamente como invitado
-  const [guest, setGuest] = useState(true);
+  const [guest, setGuest] = useState(false);
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -40,11 +40,14 @@ function App() {
       setUser(firebaseUser);
       if (firebaseUser) {
         setGuest(false);
-        setShowLoginModal(false); // Cierra el modal de login al iniciar sesión
+        setShowLoginModal(false);
+      } else if (!showLoginModal) {
+        setGuest(true);
       }
     });
     return () => unsubscribe();
-  }, []);
+  }, [showLoginModal]);
+
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Personal");
@@ -111,29 +114,59 @@ function App() {
 
   // Cargar tareas del localStorage al iniciar
   // Sincronizar tareas con Firestore o localStorage
+  // useEffect(() => {
+  //   if (guest) {
+  //     const savedTasks = localStorage.getItem("todoTasks");
+  //     setTasks(savedTasks ? JSON.parse(savedTasks) : []);
+  //     return;
+  //   }
+  //   if (user) {
+  //     const q = query(
+  //       collection(db, "tasks"),
+  //       where("uid", "==", user.uid),
+  //       orderBy("createdAt", "desc")
+  //     );
+  //     const unsubscribe = onSnapshot(q, (querySnapshot) => {
+  //       const tasksData = [];
+  //       querySnapshot.forEach((doc) => {
+  //         tasksData.push({ id: doc.id, ...doc.data() });
+  //       });
+  //       setTasks(tasksData);
+  //     });
+  //     return () => unsubscribe();
+  //   }
+  //   setTasks([]);
+  // }, [user, guest]);
+
   useEffect(() => {
-    if (guest) {
-      const savedTasks = localStorage.getItem("todoTasks");
-      setTasks(savedTasks ? JSON.parse(savedTasks) : []);
-      return;
-    }
-    if (user) {
-      const q = query(
-        collection(db, "tasks"),
-        where("uid", "==", user.uid),
-        orderBy("createdAt", "desc")
-      );
-      const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        const tasksData = [];
-        querySnapshot.forEach((doc) => {
-          tasksData.push({ id: doc.id, ...doc.data() });
-        });
-        setTasks(tasksData);
-      });
-      return () => unsubscribe();
-    }
-    setTasks([]);
-  }, [user, guest]);
+  if (!user) return;
+
+  const q = query(
+    collection(db, "tasks"),
+    where("uid", "==", user.uid),
+    orderBy("createdAt", "desc")
+    
+  );
+
+  const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    const tasksData = [];
+    querySnapshot.forEach((doc) => {
+      tasksData.push({ id: doc.id, ...doc.data() });
+    });
+    setTasks(tasksData);
+    console.log("USER:" + user)
+  });
+
+  return () => unsubscribe();
+}, [user]);
+
+useEffect(() => {
+  if (!guest) return;
+  const savedTasks = localStorage.getItem("todoTasks");
+  setTasks(savedTasks ? JSON.parse(savedTasks) : []);
+  console.log("guest:" + guest)
+}, [guest]);
+
 
   // Obtener color de categoría
   const getCategoryStyle = (categoryName) => {
@@ -180,7 +213,7 @@ function App() {
         text: newTask.trim(),
         completed: false,
         category: selectedCategory,
-        createdAt: new Date().toISOString(),
+        createdAt: serverTimestamp(),
       };
       const updated = [...tasks, task];
       setTasks(updated);
@@ -191,11 +224,11 @@ function App() {
     }
     if (user) {
       const task = {
-        text: newTask.trim(),
-        completed: false,
-        category: selectedCategory,
-        createdAt: new Date().toISOString(),
-        uid: user.uid,
+      text: newTask.trim(),
+  completed: false,
+  category: selectedCategory,
+  createdAt: serverTimestamp(),
+  uid: user.uid,
       };
       setShowAddModal(false);
       setNewTask("");
@@ -318,6 +351,7 @@ function App() {
   };
 
   // Ya no mostramos AuthForm aquí, el login será modal
+  useEffect(() => { console.log("USER:" + user); console.log("GUEST:" + guest)},[user, guest]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-700 to-slate-900 py-8 px-4">
