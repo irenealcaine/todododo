@@ -353,7 +353,7 @@ useEffect(() => {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-700 to-slate-900 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-700 to-slate-900 py-8 px-4 font-montserrat">
       <div className="max-w-2xl mx-auto">
 
         {/* Header with Filter Toggle y Login */}
