@@ -4,7 +4,12 @@ import { useState } from "react";
 //   onGuest: PropTypes.func.isRequired,
 // };
 import { auth } from "./firebase";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  // signInWithPopup, 
+  // GoogleAuthProvider 
+} from "firebase/auth";
 
 // eslint-disable-next-line react/prop-types
 export function AuthForm({ onGuest }) {
@@ -27,15 +32,15 @@ export function AuthForm({ onGuest }) {
     }
   };
 
-  const handleGoogle = async () => {
-    setError("");
-    try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-    } catch (err) {
-      setError(err.message);
-    }
-  };
+  // const handleGoogle = async () => {
+  //   setError("");
+  //   try {
+  //     const provider = new GoogleAuthProvider();
+  //     await signInWithPopup(auth, provider);
+  //   } catch (err) {
+  //     setError(err.message);
+  //   }
+  // };
 
   return (
     <div className="auth-form">

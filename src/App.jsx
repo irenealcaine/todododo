@@ -154,7 +154,7 @@ function App() {
       tasksData.push({ id: doc.id, ...doc.data() });
     });
     setTasks(tasksData);
-    console.log("USER:" + user)
+    // console.log("USER:" + user)
   });
 
   return () => unsubscribe();
@@ -164,7 +164,7 @@ useEffect(() => {
   if (!guest) return;
   const savedTasks = localStorage.getItem("todoTasks");
   setTasks(savedTasks ? JSON.parse(savedTasks) : []);
-  console.log("guest:" + guest)
+  // console.log("guest:" + guest)
 }, [guest]);
 
 
@@ -359,7 +359,7 @@ useEffect(() => {
         {/* Header with Filter Toggle y Login */}
         <div className="flex justify-between items-center mb-8">
           <div className="text-center flex-1">
-            <h1 className="text-3xl font-bold text-white mb-2">Todos</h1>
+            <h1 className="text-3xl font-bold text-white mb-2">Todododos</h1>
           </div>
 
           <div className="flex gap-2">
@@ -538,13 +538,13 @@ useEffect(() => {
               </div>
               <p className="text-gray-300 text-lg mb-2">
                 {filterCategory === "Todas"
-                  ? "Without to-do's"
-                  : `Without to-do's in ${filterCategory}`}
+                  ? "Without todododos"
+                  : `Without todododos in ${filterCategory}`}
               </p>
               <p className="text-gray-400 text-sm">
                 {filterCategory === "Todas"
-                  ? "Click on the + button to add a to-do"
-                  : "Change the filter or add a to-do"}
+                  ? "Click on the + button to add a todododo"
+                  : "Change the filter or add a todododo"}
               </p>
             </div>
           ) : (
@@ -681,7 +681,7 @@ useEffect(() => {
         <button
           onClick={() => setShowAddModal(true)}
           className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-full shadow-2xl hover:shadow-cyan-500/25 hover:scale-110 transition-all duration-200 flex items-center justify-center z-50"
-          title="Add to-do"
+          title="Add todododo"
         >
           <FaPlus />
         </button>
@@ -699,7 +699,7 @@ useEffect(() => {
               onKeyDown={handleModalKeyPress}
             >
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-semibold text-white">New to-do</h3>
+                <h3 className="text-xl font-semibold text-white">New todododo</h3>
                 <button
                   onClick={() => setShowAddModal(false)}
                   className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-200 hover:bg-gray-700 rounded-full transition-all"
