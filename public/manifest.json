@@ -1,16 +1,25 @@
 {
-  "name": "My Task Manager",
   "short_name": "Todododo",
-  "description": "what wil you dododo today?",
-  "start_url": ".",
-  "display": "standalone",
-  "background_color": "#020618",
-  "theme_color": "#020618",
+  "name": "Todododo app",
   "icons": [
     {
-      "src": "check.svg",
-      "sizes": "800x800",
-      "type": "image/svg+xml"
+      "src": "check.png",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "check.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "check.png",
+      "type": "image/png",
+      "sizes": "512x512"
     }
-  ]
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#020618",
+  "background_color": "#020618"
 }
